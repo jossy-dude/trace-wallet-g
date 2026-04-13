@@ -1,0 +1,51 @@
+{
+    "sms_port": 8765,
+    "sms_debounce_seconds": 128,
+    "sms_instant_mode": false,
+    "sms_listener_enabled": true,
+    "bank_start_dates": {
+        "CBE": "2024-12-10",
+        "Telebirr": "2024-04-11",
+        "BOA": "2025-10-13",
+        "Dashen": "2024-11-30"
+    },
+    "bank_regex_overrides": {},
+    "accent_hue": 206,
+    "accent_saturation": 100,
+    "glass_opacity": 45,
+    "nav_mode": "sidebar",
+    "reduce_motion": false,
+    "number_format": "1,234.56",
+    "currency": "USD ($)",
+    "currency_symbol": "$",
+    "language": "en",
+    "hard_stop_enabled": true,
+    "lock_timeout_minutes": 15,
+    "budget_limits": {},
+    "relay_rules": [],
+    "bank_patterns": {},
+    "chart_preferences": {
+        "trajectory": {
+            "type": "area",
+            "scale": "monthly",
+            "metrics": {
+                "income": true,
+                "expense": true,
+                "net": true,
+                "fees": false
+            }
+        },
+        "donut": {
+            "type": "donut",
+            "scale": "monthly"
+        }
+    },
+    "accounts": [],
+    "category_icons": {},
+    "theme": "light",
+    "privacy_mask": false,
+    "onboarding_completed": true,
+    "style_variant": "glossy",
+    "stats_carousel": true,
+    "fab_animation": "bounce"
+}

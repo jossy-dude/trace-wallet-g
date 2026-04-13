@@ -1,0 +1,55 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Node.js / React / Electron
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build outputs
+/build/
+/dist/
+/dist-electron/
+/.vite/
+/.electron/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Application data (user-specific)
+*.db
+*.db-journal
+vault_data.json
+vault_config.json
+staging_vault.json
+
+# Logs
+*.log
+pip_error.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+

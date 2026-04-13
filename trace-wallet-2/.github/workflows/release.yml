@@ -1,0 +1,204 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vault_pro/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node dependencies
+        run: |
+          cd vault_pro
+          npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd vault_pro/python
+          pip install -r requirements.txt
+
+      - name: Build React app
+        run: |
+          cd vault_pro
+          npm run build
+
+      - name: Build Electron app
+        run: |
+          cd vault_pro
+          npm run dist
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VaultPro-Windows
+          path: vault_pro/dist-electron/*.exe
+          if-no-files-found: error
+
+  build-macos:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vault_pro/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node dependencies
+        run: |
+          cd vault_pro
+          npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd vault_pro/python
+          pip install -r requirements.txt
+
+      - name: Build React app
+        run: |
+          cd vault_pro
+          npm run build
+
+      - name: Build Electron app
+        run: |
+          cd vault_pro
+          npm run dist
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VaultPro-macOS
+          path: vault_pro/dist-electron/*.dmg
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vault_pro/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Node dependencies
+        run: |
+          cd vault_pro
+          npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd vault_pro/python
+          pip install -r requirements.txt
+
+      - name: Build React app
+        run: |
+          cd vault_pro
+          npm run build
+
+      - name: Build Electron app
+        run: |
+          cd vault_pro
+          npm run dist
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VaultPro-Linux
+          path: |
+            vault_pro/dist-electron/*.AppImage
+            vault_pro/dist-electron/*.deb
+          if-no-files-found: warn
+
+  publish-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: VaultPro-Windows
+          path: release-windows
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: VaultPro-macOS
+          path: release-macos
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: VaultPro-Linux
+          path: release-linux
+
+      - name: Stage release files
+        run: |
+          set -e
+          mkdir -p upload
+          cp release-windows/*.exe "upload/VaultPro-${TAG_NAME}-Windows.exe" || echo "No Windows build"
+          cp release-macos/*.dmg "upload/VaultPro-${TAG_NAME}-macOS.dmg" || echo "No macOS build"
+          cp release-linux/*.AppImage "upload/VaultPro-${TAG_NAME}-Linux.AppImage" || echo "No AppImage"
+          cp release-linux/*.deb "upload/VaultPro-${TAG_NAME}-Linux.deb" || echo "No deb package"
+          ls -la upload/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Vault Pro ${{ env.TAG_NAME }}
+          body_path: RELEASE_NOTES.md
+          fail_on_unmatched_files: false
+          files: upload/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
